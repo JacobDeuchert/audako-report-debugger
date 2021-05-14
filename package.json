@@ -1,0 +1,102 @@
+{
+	"name": "audako-report-debugger",
+	"displayName": "audako-report-debugger",
+	"description": "Easier debugging and workflow for audako reports",
+	"version": "0.0.1",
+	"engines": {
+		"vscode": "^1.56.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onCommand:audako-report-debugger.helloWorld",
+		"onStartupFinished"
+	],
+	"main": "./dist/extension/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "audako-report-debugger.setClientUrl",
+				"title": "ReportDebugger: Set Client Url"
+			},
+			{
+				"command": "audako-report-debugger.setReportTemplateId",
+				"title": "ReportDebugger: Set Report Template Id"
+			},
+			{
+				"command": "audako-report-debugger.setReportId",
+				"title": "ReportDebugger: Set Report Id"
+			},
+			{
+				"command": "audako-report-debugger.setIdToken",
+				"title": "ReportDebugger: Set Id Token"
+			},
+			{
+				"command": "audako-report-debugger.signCurrentFile",
+				"title": "ReportDebugger: Sign Current File"
+			},
+			{
+				"command": "audako-report-debugger.uploadRunCurrentFile",
+				"title": "ReportDebugger: Upload & Run Current File"
+			}
+		],
+		"views": {
+			"audako-report-debugger": [
+				{
+					"id": "audako-report-debugger-view",
+					"name": "Sidepanel",
+					"type": "webview"
+				}
+			]
+		},
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"title": "Audako Report Debugger",
+					"id": "audako-report-debugger",
+					"name": "Reports",
+					"icon": "logo.svg"
+				}
+			]
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run package",
+		"compile": "webpack",
+		"watch": "webpack --watch",
+		"package": "webpack --mode production --devtool hidden-source-map",
+		"test-compile": "tsc -p ./",
+		"test-watch": "tsc -watch -p ./",
+		"pretest": "npm run test-compile && npm run lint",
+		"lint": "eslint src --ext ts",
+		"test": "node ./out/test/runTest.js",
+		"build-webview": "rollup -c"
+	},
+	"devDependencies": {
+		"@rollup/plugin-commonjs": "^17.0.0",
+		"@rollup/plugin-node-resolve": "^11.0.0",
+		"@rollup/plugin-typescript": "^8.2.1",
+		"@tsconfig/svelte": "^1.0.10",
+		"@types/glob": "^7.1.3",
+		"@types/mocha": "^8.0.4",
+		"@types/node": "^12.11.7",
+		"@types/vscode": "^1.56.0",
+		"@typescript-eslint/eslint-plugin": "^4.14.1",
+		"@typescript-eslint/parser": "^4.14.1",
+		"eslint": "^7.19.0",
+		"glob": "^7.1.6",
+		"mocha": "^8.2.1",
+		"rollup": "^2.47.0",
+		"rollup-plugin-css-only": "^3.1.0",
+		"rollup-plugin-svelte": "^7.1.0",
+		"rollup-plugin-terser": "^7.0.2",
+		"svelte": "^3.38.2",
+		"svelte-preprocess": "^4.7.3",
+		"ts-loader": "^8.0.14",
+		"typescript": "^4.1.3",
+		"vscode-test": "^1.5.0",
+		"webpack": "^5.19.0",
+		"webpack-cli": "^4.4.0"
+	}
+}
