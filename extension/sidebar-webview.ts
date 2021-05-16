@@ -1,10 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { getVSCodeDownloadUrl } from 'vscode-test/out/util';
-import { Configuration } from './configuration.model';
+import { Configuration } from './models/configuration.model';
 import { ConfigurationService } from './configuration.service';
-import { config } from 'process';
-
 export class SidebarProvider implements vscode.WebviewViewProvider {
 
   private webviewView: vscode.WebviewView;
@@ -37,8 +34,11 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
       case 'setClientUrl':
       case 'setReportTemplateId':
       case 'setReportId':
+      case 'setDebugDate':
+      case 'uploadRunCurrentFile':
         this._execCommand(message.command); 
         break;
+  
     }
   }
 

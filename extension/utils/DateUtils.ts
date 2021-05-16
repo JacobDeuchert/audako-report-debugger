@@ -1,0 +1,1 @@
+export const DateFormats: string[] = ['DD.MM.YYYY, HH:mm:ss', 'DD.MM.YYYY HH:mm:ss' , 'DD.MM.YYYY', 'DD.M.YYYY, HH:mm', 'DD.M.YYYY HH:mm:ss' , 'DD.M.YYYY'];

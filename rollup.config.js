@@ -33,10 +33,6 @@ export default {
       dedupe: ['svelte']
     }),
     commonjs(),
-    typescript({
-      sourceMap: !production,
-      inlineSources: !production
-    }),
     production && terser()
   ]
 
