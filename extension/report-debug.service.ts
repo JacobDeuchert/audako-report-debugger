@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import { ConfigurationService } from "./configuration.service";
 import { CommandService } from "./interfaces/command-service.interface";
 import axios from "axios";
+import got from 'got';
 import * as FormData from "form-data";
 import { Configuration } from './models/configuration.model';
 import { ClientConfiguration } from './models/client-configuration.model';
@@ -62,12 +63,9 @@ export class ReportDebugService implements CommandService {
       throw new Error('No active editor/file was found');
     }
 
-    console.log(activeEditor);
     const filePath = activeEditor.document.uri.fsPath;
 
     this._currentReportName = this._getFileNameFromPath(filePath);
-
-    console.log('FilePaht', filePath, 'hello');
 
     if (!filePath) {
       throw new Error('FilePath for active editor not found. Make sure to save the file!');
@@ -85,14 +83,14 @@ export class ReportDebugService implements CommandService {
     {
       const uploadUrl = this._getUploadUrl(configuration, clientConfiguration, fileType);
 
-      console.log(uploadUrl);
+      const uploadHeaders = {...this._getAuthorizationHeader(configuration.IdToken), ...formData.getHeaders()};
+
+      console.log(uploadHeaders);
 
       const uploadResponse = await axios.post(uploadUrl, formData, {
-        headers: {
-          'Authorization': 'Bearer ' + configuration.IdToken,
-          ...formData.getHeaders()
-        }
+        headers: uploadHeaders
       });
+
 
       if (uploadResponse.status === 200) {
         return null;
@@ -101,6 +99,7 @@ export class ReportDebugService implements CommandService {
       throw new Error('Unknown Reponse' + JSON.stringify(uploadResponse));
 
     } catch (err) {
+      this.loggerService.log('GotError');
       throw new Error('Failed to upload file with error: ' + err);
     }
 
@@ -223,6 +222,12 @@ export class ReportDebugService implements CommandService {
     }
 
     return token;
+  }
+
+  private _getAuthorizationHeader(idToken:string): {[p: string]: any} {
+    return {
+      Authorization: 'Bearer ' + idToken
+    }
   }
 
   private _getFileNameFromPath(path: string): string {
