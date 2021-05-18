@@ -2,16 +2,14 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import { ConfigurationService } from "./configuration.service";
 import { CommandService } from "./interfaces/command-service.interface";
-import axios from "axios";
-import got from 'got';
-import * as FormData from "form-data";
 import { Configuration } from './models/configuration.model';
 import { ClientConfiguration } from './models/client-configuration.model';
 import { LoggerService } from './logger.service';
 import { DateFormats } from './utils/DateUtils';
 import * as dayjs from 'dayjs';
 import { ReportPreviewService } from './report-preview.service';
-
+import jwt_decode from 'jwt-decode';
+import * as rp from 'request-promise-native';
 export class ReportDebugService implements CommandService {
 
   private _currentReportName: string;
@@ -58,7 +56,7 @@ export class ReportDebugService implements CommandService {
 
     
     const activeEditor = vscode.window.activeTextEditor;
-
+  
     if (!activeEditor) {
       throw new Error('No active editor/file was found');
     }
@@ -74,8 +72,9 @@ export class ReportDebugService implements CommandService {
     const fileStream = fs.createReadStream(filePath);
 
 
-    const formData = new FormData();
-    formData.append('file', fileStream);
+    const formData = {
+      file: fileStream,
+    }
 
     const fileType = this._currentReportName.endsWith('html') ? 'template' : 'script';
 
@@ -83,24 +82,30 @@ export class ReportDebugService implements CommandService {
     {
       const uploadUrl = this._getUploadUrl(configuration, clientConfiguration, fileType);
 
-      const uploadHeaders = {...this._getAuthorizationHeader(configuration.IdToken), ...formData.getHeaders()};
+      const uploadHeaders = {...this._getAuthorizationHeader(configuration.IdToken)};
 
-      console.log(uploadHeaders);
-
-      const uploadResponse = await axios.post(uploadUrl, formData, {
-        headers: uploadHeaders
+      const uploadResponse = await rp.post(uploadUrl, {
+        headers: uploadHeaders,
+        formData: formData,
+        resolveWithFullResponse: true
       });
 
-
-      if (uploadResponse.status === 200) {
+      if (uploadResponse.statusCode === 200) {
         return null;
       }
 
-      throw new Error('Unknown Reponse' + JSON.stringify(uploadResponse));
+      throw new Error('Unknown Reponse: ' + uploadResponse);
 
-    } catch (err) {
-      this.loggerService.log('GotError');
-      throw new Error('Failed to upload file with error: ' + err);
+    } catch (e: any) {
+
+      const err: string = e.toString();
+
+      if (err.includes('StatusCodeError: 401')) {
+        this._retryWithNewIdToken();  
+        throw new Error('401 Unauthorized: Invalid Token.');
+      } 
+
+      throw new Error('Failed to upload file: ' + err);
     }
 
 
@@ -123,19 +128,21 @@ export class ReportDebugService implements CommandService {
         EndDate: debugDate.toDate()
       }
 
-      const debugResponse = await axios.post(debugUrl, JSON.stringify(body), {
+      const debugResponse = await rp.post(debugUrl, {
         headers: {    'Authorization': 'Bearer ' + configuration.IdToken, 'content-type': 'application/json'},
-        
+        body: body,
+        json: true,
+        resolveWithFullResponse: true
       });
 
-      if (debugResponse.status === 200) {
-        const data = debugResponse.data as {report: string, logs: string};
+      console.log(debugResponse);
+
+      if (debugResponse.statusCode === 200) {
+        const data = debugResponse.body as {report: string, logs: string};
         this.loggerService.log(data.logs);
 
         this.reportWebviewService.showReport(this._currentReportName, data.report);
       }
-
-      const test = 1;
 
       return null;
     } catch (err) {
@@ -147,13 +154,9 @@ export class ReportDebugService implements CommandService {
 
     try {
       const url = clientUrl + '/assets/conf/application.config';
-      const request = await axios.get(url);
-
-      if (request.status === 200) {
-        return request.data as ClientConfiguration;
-      } else {
-        throw new Error('Unknown Reponse' + JSON.stringify(request));
-      }
+      const response = await rp.get(url, { json: true});
+      console.log(response);
+      return response as ClientConfiguration;
       
     } catch (err) {
      throw new Error('Failed to retrieve application config with error: ' + err);
@@ -193,6 +196,8 @@ export class ReportDebugService implements CommandService {
       configuration.IdToken = newToken;
     }
 
+    this._validateIdToken(configuration.IdToken);
+    
 
     return configuration;
   }
@@ -238,5 +243,29 @@ export class ReportDebugService implements CommandService {
     const pathElements = path.split('/');
 
     return pathElements[pathElements.length - 1];
+  }
+
+  private _validateIdToken(token:string): boolean {
+    const decodedToken = jwt_decode(token) as {exp: number};
+
+    if(decodedToken.exp * 1000 < new Date().getTime()) {
+      this.loggerService.log('Token expired');
+
+      return false;
+    }
+
+    return true;
+  }
+
+
+  private async _retryWithNewIdToken(): Promise<void> {
+    var newToken =  await vscode.commands.executeCommand('audako-report-debugger.setIdToken') as string;
+
+    if (!newToken) {
+      vscode.window.showErrorMessage('No valid token provided');
+      return;
+    }
+
+    vscode.commands.executeCommand('audako-report-debugger.uploadRunCurrentFile')
   }
 }

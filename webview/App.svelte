@@ -1,6 +1,4 @@
 <script>
-  console.log("Hello");
-
   let ClientUrl = null;
   let ReportTemplateId = null;
   let ReportId = null;
