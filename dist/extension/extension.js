@@ -17,6 +17,7 @@ const logger_service_1 = __webpack_require__(220);
 const dayjs = __webpack_require__(6);
 const customParseFormat = __webpack_require__(7);
 const report_preview_service_1 = __webpack_require__(221);
+const signing_service_1 = __webpack_require__(222);
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 function activate(context) {
@@ -25,6 +26,7 @@ function activate(context) {
     const loggerService = new logger_service_1.LoggerService();
     const configurationService = new configuration_service_1.ConfigurationService(context);
     const reportWebviewService = new report_preview_service_1.ReportPreviewService();
+    const signingService = new signing_service_1.SigningService();
     const reportDebugService = new report_debug_service_1.ReportDebugService(configurationService, loggerService, reportWebviewService);
     // register service commands
     const configurationDisposables = configurationService.registerConfigurationCommands();
@@ -33940,6 +33942,61 @@ class ReportPreviewService {
     }
 }
 exports.ReportPreviewService = ReportPreviewService;
+
+
+/***/ }),
+/* 222 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.SigningService = void 0;
+const vscode = __webpack_require__(1);
+const crypto = __webpack_require__(47);
+const fs = __webpack_require__(10);
+class SigningService {
+    constructor() {
+        this._disposable = [];
+        this._registerCommands();
+    }
+    dispose() {
+        this._disposable.map(dp => dp.dispose());
+    }
+    _registerCommands() {
+        const dp1 = vscode.commands.registerCommand('audako-report-debugger.signCurrentFile', () => __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            const activeEditor = vscode.window.activeTextEditor;
+            if (activeEditor) {
+                const fileContent = activeEditor.document.getText();
+                const hash = crypto.createHash('sha256');
+                const fileHash = hash.update(fileContent, 'utf8').digest('hex');
+                const selectedFiles = yield vscode.window.showOpenDialog({
+                    canSelectFiles: true,
+                    canSelectFolders: false,
+                    canSelectMany: false,
+                    filters: { certificate: ['pfx', 'pem', 'cert', 'crt', 'key'] },
+                    title: 'SigningCertificate'
+                });
+                const filePath = (_a = selectedFiles[0]) === null || _a === void 0 ? void 0 : _a.fsPath;
+                const certificate = yield fs.promises.readFile(filePath, { encoding: 'utf8' });
+                console.log(2);
+                const rsa = null;
+            }
+        }));
+        this._disposable.push(dp1);
+    }
+}
+exports.SigningService = SigningService;
 
 
 /***/ })

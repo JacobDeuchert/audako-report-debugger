@@ -1,6 +1,10 @@
-# audako-report-debugger README
+# Audako Report Debugger - VS Code Extension
 
-This is the README for your extension "audako-report-debugger". After writing up a brief description, we recommend including the following sections.
+Extension allows easy debugging and preview of reports in any audako based system.
+
+
+
+
 
 ## Features
 
@@ -14,38 +18,25 @@ For example if there is an image subfolder under your extension project workspac
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+None
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
 This extension contributes the following settings:
 
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
+* `audaok-report-debugger.reportPreviewEnabled`: enable/disable the preview of reports
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+- Extension Settings not working properly
+- Signing not working
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
 
-### 1.0.0
+### 0.8.0
 
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+Beta release for simple unsigned report debugging
 
 -----------------------------------------------------------------------------------------------------------
 ## Following extension guidelines

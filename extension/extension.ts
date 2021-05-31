@@ -8,6 +8,7 @@ import { LoggerService } from './logger.service';
 import * as dayjs from 'dayjs';
 import * as customParseFormat from 'dayjs/plugin/customParseFormat';
 import { ReportPreviewService } from './report-preview.service';
+import { SigningService } from './signing.service';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -21,6 +22,8 @@ export function activate(context: vscode.ExtensionContext) {
 	const configurationService = new ConfigurationService(context);
 
 	const reportWebviewService = new ReportPreviewService();
+
+	const signingService = new SigningService();
 
 	const reportDebugService = new ReportDebugService(configurationService, loggerService, reportWebviewService);
 
